@@ -1,0 +1,12 @@
+chex==0.1.7
+clu==0.0.9
+contextlib2==21.6.0
+flax==0.7.2
+jax==0.4.14
+jaxlib==0.4.14
+ml-collections==0.1.1
+ml-dtypes==0.2.0
+optax==0.1.7
+orbax-checkpoint==0.3.5
+rich==13.5.2
+tensorstore==0.1.41
