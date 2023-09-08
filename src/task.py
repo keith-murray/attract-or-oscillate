@@ -18,6 +18,10 @@ class SETDataset:
         self.key = key
         
         self.encoded_colors = self.generate_encoded_colors()
+        self.SET_dict = self.create_data_dict()
+        self.instantiate_SET_dict()
+        self.SET_grokked = {'Accepted': [], 'Rejected': []}
+        self.SET_corrupted = {'Accepted': [], 'Rejected': []}
         
         self.training_dict = self.create_data_dict()
         self.fill_data_dict(self.training_dict, self.accepted_trials, self.rejected_trials,)
@@ -66,6 +70,18 @@ class SETDataset:
         training_dict = {"".join(comb): [] for comb in all_combinations}
         return training_dict
 
+    def instantiate_SET_dict(self,):
+        """
+        Fills the SET_dict with the standard SET labels.
+        """
+        for SET_combination in self.SET_dict:
+            unique_colors = len(set(list(SET_combination)))
+
+            if unique_colors == 2:
+                self.SET_dict[SET_combination] = (1, "")
+            else:
+                self.SET_dict[SET_combination] = (-1, "")
+    
     def create_trial(self, SET_combination, unique_colors,):
         """
         Create a trial with random "ball" positions and associated colors.
@@ -141,6 +157,44 @@ class SETDataset:
     
         return first_label
 
+    def grok_SET(self, num_SETs):
+        """
+        Remove randomly selected SETs from the training_dict if they are not corrupted.
+        SETs are grokked at a ratio of 1 accepted to 2 rejected.
+
+        Parameters:
+            num_SETs (int): The number of SETs to grok.
+        """
+        pass #TODO: Implement
+
+    def corrupt_SET(self, num_SETs):
+        """
+        Inverse the label for randomly selected SETs from the training_dict and testing_dict
+        if they are not grokked. SETs are corrupted at a ratio of 1 accepted to 1 rejected.
+
+        Parameters:
+            num_SETs (int): The number of SETs to corrupt.
+        """
+        pass #TODO: Implement
+
+    def grok_specified_SET(self, SET):
+        """
+        Remove specified SET from the training_dict.
+
+        Parameters:
+            SET (str): Specific SET to grok.
+        """
+        pass #TODO: Implement
+
+    def corrupt_specified_SET(self, SET):
+        """
+        Inverse the label for specified SET from the training_dict and testing_dict.
+
+        Parameters:
+            SET (str): Specific SET to corrupt.
+        """
+        pass #TODO: Implement
+    
     def print_data_dict(self, data_dict):
         """
         Print two grids. One grid has all the positive label SET_combinations, 
