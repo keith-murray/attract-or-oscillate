@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 from jax import random
 from itertools import product
+import tensorflow as tf
 
 class SETDataset:
     def __init__(self, key, accepted_trials, rejected_trials):
@@ -133,7 +134,7 @@ class SETDataset:
         """
         SET_trials = data_dict[SET_combination]
         SET_labels = [trial[1].item() for trial in SET_trials]
-    
+        
         # Check if all labels are the same
         first_label = SET_labels[0]
         assert all(label == first_label for label in SET_labels), "Labels are not the same for all trials."
@@ -161,7 +162,63 @@ class SETDataset:
             label = self.check_and_return_label(data_dict, comb)
             if label == -1:
                 print(f"{comb} | {len(data_dict[comb])} | {label}")
+
+    def generate_numpy_tensor(self, data_dict):
+        """
+        Create features and labels tensors for the tensorflow dataset.
+        
+        Parameters:
+            data_dict (dict): The data dictionary containing trials.
+        
+        Returns:
+            tuple: A tuple containing:
+                - features_tensor (jnp.ndarray): A tensor containing all the feature arrays stacked along axis 0. 
+                  Shape is (total_trials, 50, 100).
+                - labels_tensor (jnp.ndarray): A tensor containing all the label arrays stacked along axis 0.
+                  Shape is (total_trials, 5, 1).
+        """
+        # Initialize lists to hold feature and label arrays
+        features_list = []
+        labels_list = []
+        
+        # Iterate through each SET_combination in the data_dict
+        for SET_combination, trials in data_dict.items():
+            for input_array, output_array in trials:
+                features_list.append(input_array)
+                
+                # Expand the label from shape (1) to (5, 1)
+                expanded_label = jnp.tile(output_array, (5, 1))
+                labels_list.append(expanded_label)
+        
+        # Stack the features and labels to create the final tensors
+        features_tensor = jnp.stack(features_list, axis=0)
+        labels_tensor = jnp.stack(labels_list, axis=0)
+        
+        return features_tensor, labels_tensor
     
+    def generate_tf_dataset(self, data_dict, batch_size):
+        """
+        Create a TensorFlow Dataset object from the provided data_dict and batch size.
+        
+        This method first generates JAX tensors for the features and labels using the 
+        `generate_numpy_tensor` method. These tensors are then converted into a TensorFlow 
+        Dataset, which is shuffled and batched based on the provided batch size.
+        
+        Parameters:
+            data_dict (dict): The data dictionary containing trials for each SET_combination.
+            batch_size (int): The number of samples to include in each batch.
+            
+        Returns:
+            tf.data.Dataset: A shuffled and batched TensorFlow Dataset object ready for training or evaluation.
+        """
+        features_tensor, labels_tensor = self.generate_numpy_tensor(data_dict)
+        dataset = tf.data.Dataset.from_tensor_slices((features_tensor, labels_tensor))
+        subkey = self.generate_subkey()
+        dataset = dataset.shuffle(dataset.cardinality(), reshuffle_each_iteration=True, seed=subkey[0].item())
+        dataset = dataset.batch(batch_size, drop_remainder=True)
+        dataset = dataset.prefetch(2)
+
+        return dataset
     
 if __name__ == "__main__":
     pass
