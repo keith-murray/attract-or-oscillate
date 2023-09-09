@@ -25,15 +25,9 @@ class SETDataset:
         
         self.training_dict = self.create_data_dict()
         self.fill_data_dict(self.training_dict, self.accepted_trials, self.rejected_trials,)
-        print("\nTRAINING DATASET\n")
-        self.print_data_dict(self.training_dict,)
-
-        print("\n----------")
         
         self.testing_dict = self.create_data_dict()
         self.fill_data_dict(self.testing_dict, 1, 1,)
-        print("\nTESTING DATASET\n")
-        self.print_data_dict(self.testing_dict,)
 
     def generate_subkey(self,):
         """
@@ -78,9 +72,19 @@ class SETDataset:
             unique_colors = len(set(list(SET_combination)))
 
             if unique_colors == 2:
-                self.SET_dict[SET_combination] = (1, "")
-            else:
                 self.SET_dict[SET_combination] = (-1, "")
+            else:
+                self.SET_dict[SET_combination] = (1, "")
+
+    def print_SET_dict(self,):
+        """
+        Print the contents of SET_dict with SET combinations in the first column,
+        label in the second column, and status in the last column.
+        """
+        print("Contents SET_dict:")
+        print("SET_combination | Label | Status")
+        for SET, (label, status) in self.SET_dict.items():
+            print(f"{SET} | {label} | {status}")
     
     def create_trial(self, SET_combination, unique_colors,):
         """
@@ -160,23 +164,55 @@ class SETDataset:
     def grok_SET(self, num_SETs):
         """
         Remove randomly selected SETs from the training_dict if they are not corrupted.
-        SETs are grokked at a ratio of 1 accepted to 2 rejected.
 
         Parameters:
             num_SETs (int): The number of SETs to grok.
         """
-        pass #TODO: Implement
+        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
+        grokked_sets = [available_sets[i] for i in selected_indices]
 
+        for SET in grokked_sets:
+            unique_colors = len(set(list(SET)))
+            if unique_colors == 2:
+                self.SET_grokked['Rejected'].append(SET)
+            else:
+                self.SET_grokked['Accepted'].append(SET)
+            
+            self.SET_dict[SET] = (self.SET_dict[SET][0], 'Grokked')
+            
+            del self.training_dict[SET]
+            
     def corrupt_SET(self, num_SETs):
         """
         Inverse the label for randomly selected SETs from the training_dict and testing_dict
-        if they are not grokked. SETs are corrupted at a ratio of 1 accepted to 1 rejected.
-
+        if they are not grokked.
+    
         Parameters:
             num_SETs (int): The number of SETs to corrupt.
         """
-        pass #TODO: Implement
-
+        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
+        corrupted_sets = [available_sets[i] for i in selected_indices]
+    
+        for SET in corrupted_sets:
+            unique_colors = len(set(list(SET)))
+            if unique_colors == 2:
+                self.SET_corrupted['Rejected'].append(SET)
+            else:
+                self.SET_corrupted['Accepted'].append(SET)
+            
+            self.SET_dict[SET] = (-self.SET_dict[SET][0], 'Corrupted')
+    
+            # Refill training data based on the new label
+            num_trials = self.accepted_trials if unique_colors == 2 else self.rejected_trials
+            new_trials = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
+            self.training_dict[SET] = new_trials
+    
+            # Modify training and testing data
+            self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
+            self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
+    
     def grok_specified_SET(self, SET):
         """
         Remove specified SET from the training_dict.
@@ -184,38 +220,66 @@ class SETDataset:
         Parameters:
             SET (str): Specific SET to grok.
         """
-        pass #TODO: Implement
+        if SET in self.training_dict:
+            unique_colors = len(set(list(SET)))
+            if unique_colors == 2:
+                self.SET_grokked['Rejected'].append(SET)
+            else:
+                self.SET_grokked['Accepted'].append(SET)
+
+            self.SET_dict[SET] = (self.SET_dict[SET][0], 'Grokked')
+
+            del self.training_dict[SET]
 
     def corrupt_specified_SET(self, SET):
         """
         Inverse the label for specified SET from the training_dict and testing_dict.
-
+    
         Parameters:
             SET (str): Specific SET to corrupt.
         """
-        pass #TODO: Implement
+        if SET in self.training_dict:
+            unique_colors = len(set(list(SET)))
+            if unique_colors == 2:
+                self.SET_corrupted['Rejected'].append(SET)
+            else:
+                self.SET_corrupted['Accepted'].append(SET)
+            
+            self.SET_dict[SET] = (-self.SET_dict[SET][0], 'Corrupted')
+    
+            # Refill training data based on the new label
+            num_trials = self.accepted_trials if unique_colors == 2 else self.rejected_trials
+            new_trials = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
+            self.training_dict[SET] = new_trials
+    
+            # Modify training and testing data
+            self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
+            self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
     
     def print_data_dict(self, data_dict):
         """
         Print two grids. One grid has all the positive label SET_combinations, 
         and the other grid has all the negative label SET_combinations.
-
+        Within each grid, the status ('Grokked' or 'Corrupted') of each SET is displayed.
+    
         Parameters:
             data_dict (dict): The data dictionary containing trials.
         """
-        print("Positive Label Grid:")
-        print("SET_combinations | Number of Trials | Label")
+        print("Accepting Grid:")
+        print("SET_combinations | Number of Trials | Status")
         for comb in data_dict:
             label = self.check_and_return_label(data_dict, comb)
             if label == 1:
-                print(f"{comb} | {len(data_dict[comb])} | {label}")
-                
-        print("\nNegative Label Grid:")
-        print("SET_combinations | Number of Trials | Label")
+                status = self.SET_dict.get(comb, ('', ''))[1]  # Fetching status from SET_dict
+                print(f"{comb} | {len(data_dict[comb])} | {status}")
+                    
+        print("\nRejecting Grid:")
+        print("SET_combinations | Number of Trials | Status")
         for comb in data_dict:
             label = self.check_and_return_label(data_dict, comb)
             if label == -1:
-                print(f"{comb} | {len(data_dict[comb])} | {label}")
+                status = self.SET_dict.get(comb, ('', ''))[1]  # Fetching status from SET_dict
+                print(f"{comb} | {len(data_dict[comb])} | {status}")
 
     def generate_numpy_tensor(self, data_dict):
         """
