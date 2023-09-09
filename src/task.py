@@ -264,10 +264,10 @@ class SETDataset:
         """
         Print all relevant information pertaining to training and testing dicts.
         """
-        print("\nTESTING DATA\n")
+        print("\nTRAINING DATA\n")
         self.print_data_dict(self.training_dict)
         print("\n----------")
-        print("\nTRAINING DATA\n")
+        print("\nTESTING DATA\n")
         self.print_data_dict(self.testing_dict)
     
     def generate_numpy_tensor(self, data_dict):
