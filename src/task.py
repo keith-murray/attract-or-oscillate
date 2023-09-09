@@ -4,7 +4,7 @@ from itertools import product
 import tensorflow as tf
 
 class SETDataset:
-    def __init__(self, key, accepted_trials, rejected_trials):
+    def __init__(self, key, accepted_trials, rejected_trials, train_batch_size,):
         """
         Initialize the SETDataset class.
         
@@ -12,10 +12,12 @@ class SETDataset:
             key (random.PRNGKey): The initial random key.
             accepted_trials (int): The number of accepted trials.
             rejected_trials (int): The number of rejected trials.
+            train_batch_size (int): The size of training batches
         """
+        self.key = key
         self.accepted_trials = accepted_trials
         self.rejected_trials = rejected_trials
-        self.key = key
+        self.train_batch_size = train_batch_size
         
         self.encoded_colors = self.generate_encoded_colors()
         self.SET_dict = self.create_data_dict()
@@ -161,59 +163,7 @@ class SETDataset:
     
         return first_label
 
-    def grok_SET(self, num_SETs):
-        """
-        Remove randomly selected SETs from the training_dict if they are not corrupted.
-
-        Parameters:
-            num_SETs (int): The number of SETs to grok.
-        """
-        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
-        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
-        grokked_sets = [available_sets[i] for i in selected_indices]
-
-        for SET in grokked_sets:
-            unique_colors = len(set(list(SET)))
-            if unique_colors == 2:
-                self.SET_grokked['Rejected'].append(SET)
-            else:
-                self.SET_grokked['Accepted'].append(SET)
-            
-            self.SET_dict[SET] = (self.SET_dict[SET][0], 'Grokked')
-            
-            del self.training_dict[SET]
-            
-    def corrupt_SET(self, num_SETs):
-        """
-        Inverse the label for randomly selected SETs from the training_dict and testing_dict
-        if they are not grokked.
-    
-        Parameters:
-            num_SETs (int): The number of SETs to corrupt.
-        """
-        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
-        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
-        corrupted_sets = [available_sets[i] for i in selected_indices]
-    
-        for SET in corrupted_sets:
-            unique_colors = len(set(list(SET)))
-            if unique_colors == 2:
-                self.SET_corrupted['Rejected'].append(SET)
-            else:
-                self.SET_corrupted['Accepted'].append(SET)
-            
-            self.SET_dict[SET] = (-self.SET_dict[SET][0], 'Corrupted')
-    
-            # Refill training data based on the new label
-            num_trials = self.accepted_trials if unique_colors == 2 else self.rejected_trials
-            new_trials = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
-            self.training_dict[SET] = new_trials
-    
-            # Modify training and testing data
-            self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
-            self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
-    
-    def grok_specified_SET(self, SET):
+    def grok_specified_SET(self, SET,):
         """
         Remove specified SET from the training_dict.
 
@@ -231,7 +181,7 @@ class SETDataset:
 
             del self.training_dict[SET]
 
-    def corrupt_specified_SET(self, SET):
+    def corrupt_specified_SET(self, SET,):
         """
         Inverse the label for specified SET from the training_dict and testing_dict.
     
@@ -255,6 +205,35 @@ class SETDataset:
             # Modify training and testing data
             self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
             self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
+
+    def grok_SET(self, num_SETs,):
+        """
+        Remove randomly selected SETs from the training_dict if they are not corrupted.
+
+        Parameters:
+            num_SETs (int): The number of SETs to grok.
+        """
+        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
+        grokked_sets = [available_sets[i] for i in selected_indices]
+
+        for SET in grokked_sets:
+            self.grok_specified_SET(SET)
+            
+    def corrupt_SET(self, num_SETs,):
+        """
+        Inverse the label for randomly selected SETs from the training_dict and testing_dict
+        if they are not grokked.
+    
+        Parameters:
+            num_SETs (int): The number of SETs to corrupt.
+        """
+        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
+        corrupted_sets = [available_sets[i] for i in selected_indices]
+    
+        for SET in corrupted_sets:
+            self.corrupt_specified_SET(SET)
     
     def print_data_dict(self, data_dict):
         """
@@ -281,6 +260,16 @@ class SETDataset:
                 status = self.SET_dict.get(comb, ('', ''))[1]  # Fetching status from SET_dict
                 print(f"{comb} | {len(data_dict[comb])} | {status}")
 
+    def print_training_testing(self,):
+        """
+        Print all relevant information pertaining to training and testing dicts.
+        """
+        print("\nTESTING DATA\n")
+        self.print_data_dict(self.training_dict)
+        print("\n----------")
+        print("\nTRAINING DATA\n")
+        self.print_data_dict(self.testing_dict)
+    
     def generate_numpy_tensor(self, data_dict):
         """
         Create features and labels tensors for the tensorflow dataset.
@@ -337,6 +326,16 @@ class SETDataset:
         dataset = dataset.prefetch(2)
 
         return dataset
+
+    def tf_datasets(self,):
+        """
+        Create both training and testing TensorFlow Datasets.
+        """
+        training_tf_dataset = self.generate_tf_dataset(self.training_dict, self.train_batch_size)
+        test_batch_size = sum([len(trials) for _, trials in self.testing_dict.items()])
+        testing_tf_dataset = self.generate_tf_dataset(self.testing_dict, test_batch_size)
+
+        return training_tf_dataset, testing_tf_dataset
     
 if __name__ == "__main__":
     pass
