@@ -161,17 +161,23 @@ class SETDataset:
                 
         if len(accepting_SETs) > len(rejecting_SETs):
             over_represented_SETs = accepting_SETs
+            over_represented_type = 1
             under_represented_SETs = rejecting_SETs
-            unique_colors = 2
+            under_represented_type = 2
         else:
             over_represented_SETs = rejecting_SETs
+            over_represented_type = 2
             under_represented_SETs = accepting_SETs
-            unique_colors = 1
+            under_represented_type = 1
 
         under_represented_trials = round((len(over_represented_SETs) * min_trials) / len(under_represented_SETs))
 
         for SET in under_represented_SETs:
-            data_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(under_represented_trials)]
+            data_dict[SET] = [self.create_trial(SET, under_represented_type) for _ in range(under_represented_trials)]
+
+        for SET in over_represented_SETs:
+            if len(data_dict[SET]) != min_trials:
+                data_dict[SET] = [self.create_trial(SET, over_represented_type) for _ in range(min_trials)]
         
     def grok_specified_SET(self, SET,):
         """
@@ -258,7 +264,7 @@ class SETDataset:
         SET_dict_label = self.SET_dict[SET_combination][0]
         assert all(label == SET_dict_label for label in SET_labels), "Labels are not the same for all trials."
     
-        return first_label
+        return SET_dict_label
     
     def print_data_dict(self, data_dict):
         """
