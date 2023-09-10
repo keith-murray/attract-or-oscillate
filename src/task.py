@@ -26,6 +26,7 @@ class SETDataset:
         
         self.training_dict = self.create_data_dict()
         self.fill_data_dict(self.training_dict, self.min_training_trials,)
+        self.balance_data_dict(self.training_dict, self.min_training_trials,)
         
         self.testing_dict = self.create_data_dict()
         self.fill_data_dict(self.testing_dict, self.testing_trials,)
@@ -157,20 +158,20 @@ class SETDataset:
                 accepting_SETs.append(SET)
             elif label == -1:
                 rejecting_SETs.append(SET)
-        
-        assert len(accepting_SETs) + len(rejecting_SETs) == 27, "The total number of SETs is not 27."
-        
+                
         if len(accepting_SETs) > len(rejecting_SETs):
             over_represented_SETs = accepting_SETs
             under_represented_SETs = rejecting_SETs
+            unique_colors = 2
         else:
             over_represented_SETs = rejecting_SETs
             under_represented_SETs = accepting_SETs
+            unique_colors = 1
 
         under_represented_trials = round((len(over_represented_SETs) * min_trials) / len(under_represented_SETs))
 
         for SET in under_represented_SETs:
-            data_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
+            data_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(under_represented_trials)]
         
     def grok_specified_SET(self, SET,):
         """
@@ -219,7 +220,9 @@ class SETDataset:
 
         for SET in grokked_sets:
             self.grok_specified_SET(SET)
-            
+        
+        self.balance_data_dict(self.training_dict, self.min_training_trials,)
+    
     def corrupt_SET(self, num_SETs,):
         """
         Inverse the label for randomly selected SETs from the training_dict and testing_dict
@@ -234,6 +237,8 @@ class SETDataset:
     
         for SET in corrupted_sets:
             self.corrupt_specified_SET(SET)
+
+        self.balance_data_dict(self.training_dict, self.min_training_trials,)
     
     def check_and_return_label(self, data_dict, SET_combination,):
         """
