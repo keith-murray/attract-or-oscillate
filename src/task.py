@@ -4,7 +4,7 @@ from itertools import product
 import tensorflow as tf
 
 class SETDataset:
-    def __init__(self, key, accepted_trials, rejected_trials, train_batch_size,):
+    def __init__(self, key, accepted_trials, rejected_trials, testing_trials, validate_trials, train_batch_size,):
         """
         Initialize the SETDataset class.
         
@@ -12,25 +12,30 @@ class SETDataset:
             key (random.PRNGKey): The initial random key.
             accepted_trials (int): The number of accepted trials.
             rejected_trials (int): The number of rejected trials.
+            testing_trials (int): The number of testing trials.
+            validate_trials (int): The number of validate trials.
             train_batch_size (int): The size of training batches
         """
         self.key = key
         self.accepted_trials = accepted_trials
         self.rejected_trials = rejected_trials
+        self.testing_trials = testing_trials
+        self.validate_trials = validate_trials
         self.train_batch_size = train_batch_size
         
         self.encoded_colors = self.generate_encoded_colors()
         self.SET_dict = self.create_data_dict()
         self.instantiate_SET_dict()
-        self.SET_grokked = {'Accepted': [], 'Rejected': []}
-        self.SET_corrupted = {'Accepted': [], 'Rejected': []}
         
         self.training_dict = self.create_data_dict()
         self.fill_data_dict(self.training_dict, self.accepted_trials, self.rejected_trials,)
         
         self.testing_dict = self.create_data_dict()
-        self.fill_data_dict(self.testing_dict, 1, 1,)
-
+        self.fill_data_dict(self.testing_dict, self.testing_trials, self.testing_trials,)
+        
+        self.grok_dict = {}
+        self.corrupt_dict = {}
+        
     def generate_subkey(self,):
         """
         Generate a new subkey for random operations.
@@ -172,14 +177,12 @@ class SETDataset:
         """
         if SET in self.training_dict:
             unique_colors = len(set(list(SET)))
-            if unique_colors == 2:
-                self.SET_grokked['Rejected'].append(SET)
-            else:
-                self.SET_grokked['Accepted'].append(SET)
-
+            
             self.SET_dict[SET] = (self.SET_dict[SET][0], 'Grokked')
 
             del self.training_dict[SET]
+            
+            self.grok_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
 
     def corrupt_specified_SET(self, SET,):
         """
@@ -190,21 +193,17 @@ class SETDataset:
         """
         if SET in self.training_dict:
             unique_colors = len(set(list(SET)))
-            if unique_colors == 2:
-                self.SET_corrupted['Rejected'].append(SET)
-            else:
-                self.SET_corrupted['Accepted'].append(SET)
             
             self.SET_dict[SET] = (-self.SET_dict[SET][0], 'Corrupted')
-    
-            # Refill training data based on the new label
+            
             num_trials = self.accepted_trials if unique_colors == 2 else self.rejected_trials
-            new_trials = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
-            self.training_dict[SET] = new_trials
-    
-            # Modify training and testing data
+            self.training_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
+            
             self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
             self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
+            
+            self.corrupt_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
+            self.corrupt_dict[SET] = [(x[0], -x[1]) for x in self.corrupt_dict[SET]]
 
     def grok_SET(self, num_SETs,):
         """
@@ -249,7 +248,7 @@ class SETDataset:
         for comb in data_dict:
             label = self.check_and_return_label(data_dict, comb)
             if label == 1:
-                status = self.SET_dict.get(comb, ('', ''))[1]  # Fetching status from SET_dict
+                status = self.SET_dict.get(comb, ('', ''))[1]
                 print(f"{comb} | {len(data_dict[comb])} | {status}")
                     
         print("\nRejecting Grid:")
@@ -257,7 +256,7 @@ class SETDataset:
         for comb in data_dict:
             label = self.check_and_return_label(data_dict, comb)
             if label == -1:
-                status = self.SET_dict.get(comb, ('', ''))[1]  # Fetching status from SET_dict
+                status = self.SET_dict.get(comb, ('', ''))[1]
                 print(f"{comb} | {len(data_dict[comb])} | {status}")
 
     def print_training_testing(self,):
@@ -269,6 +268,7 @@ class SETDataset:
         print("\n----------")
         print("\nTESTING DATA\n")
         self.print_data_dict(self.testing_dict)
+        print("\n")
     
     def generate_numpy_tensor(self, data_dict):
         """
@@ -329,13 +329,25 @@ class SETDataset:
 
     def tf_datasets(self,):
         """
-        Create both training and testing TensorFlow Datasets.
+        Create both training, testing, and validation TensorFlow Datasets.
         """
         training_tf_dataset = self.generate_tf_dataset(self.training_dict, self.train_batch_size)
         test_batch_size = sum([len(trials) for _, trials in self.testing_dict.items()])
         testing_tf_dataset = self.generate_tf_dataset(self.testing_dict, test_batch_size)
+        
+        try:
+            grok_batch_size = sum([len(trials) for _, trials in self.grok_dict.items()])
+            grok_tf_dataset = self.generate_tf_dataset(self.grok_dict, grok_batch_size)
+        except NameError:
+            grok_tf_dataset = None
 
-        return training_tf_dataset, testing_tf_dataset
+        try:
+            corrupt_batch_size = sum([len(trials) for _, trials in self.corrupt_dict.items()])
+            corrupt_tf_dataset = self.generate_tf_dataset(self.corrupt_dict, corrupt_batch_size)
+        except NameError:
+            corrupt_tf_dataset = None
+        
+        return training_tf_dataset, testing_tf_dataset, grok_tf_dataset, corrupt_tf_dataset
     
 if __name__ == "__main__":
     pass
