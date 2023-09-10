@@ -4,34 +4,31 @@ from itertools import product
 import tensorflow as tf
 
 class SETDataset:
-    def __init__(self, key, accepted_trials, rejected_trials, testing_trials, validate_trials, train_batch_size,):
+    def __init__(self, key, min_training_trials, testing_trials, validate_trials, train_batch_size,):
         """
         Initialize the SETDataset class.
         
         Parameters:
             key (random.PRNGKey): The initial random key.
-            accepted_trials (int): The number of accepted trials.
-            rejected_trials (int): The number of rejected trials.
+            min_training_trials (int): The minimum number of training trials per SET.
             testing_trials (int): The number of testing trials.
             validate_trials (int): The number of validate trials.
             train_batch_size (int): The size of training batches
         """
         self.key = key
-        self.accepted_trials = accepted_trials
-        self.rejected_trials = rejected_trials
+        self.min_training_trials = min_training_trials
         self.testing_trials = testing_trials
         self.validate_trials = validate_trials
         self.train_batch_size = train_batch_size
         
         self.encoded_colors = self.generate_encoded_colors()
-        self.SET_dict = self.create_data_dict()
         self.instantiate_SET_dict()
         
         self.training_dict = self.create_data_dict()
-        self.fill_data_dict(self.training_dict, self.accepted_trials, self.rejected_trials,)
+        self.fill_data_dict(self.training_dict, self.min_training_trials,)
         
         self.testing_dict = self.create_data_dict()
-        self.fill_data_dict(self.testing_dict, self.testing_trials, self.testing_trials,)
+        self.fill_data_dict(self.testing_dict, self.testing_trials,)
         
         self.grok_dict = {}
         self.corrupt_dict = {}
@@ -73,8 +70,10 @@ class SETDataset:
 
     def instantiate_SET_dict(self,):
         """
-        Fills the SET_dict with the standard SET labels.
+        Creates and fills the SET_dict with the standard SET labels.
         """
+        self.SET_dict = self.create_data_dict()
+        
         for SET_combination in self.SET_dict:
             unique_colors = len(set(list(SET_combination)))
 
@@ -128,46 +127,51 @@ class SETDataset:
         
         return (input_array, output_array)
 
-    def fill_data_dict(self, data_dict, accepted_trials, rejected_trials,):
+    def fill_data_dict(self, data_dict, trials,):
         """
         Fill the data dictionary with trials based on unique colors.
         
         Parameters:
             data_dict (dict): The dictionary to be filled.
-            accepted_trials (int): The number of accepted trials.
-            rejected_trials (int): The number of rejected trials.
+            trials (int): The number of trials per SET.
         """
         for SET_combination in data_dict:
             unique_colors = len(set(list(SET_combination)))
+            data_dict[SET_combination] = [self.create_trial(SET_combination, unique_colors) for _ in range(trials)]
 
-            if unique_colors == 2:
-                for trial in range(rejected_trials):
-                    data_dict[SET_combination].append(self.create_trial(SET_combination, unique_colors))
-
-            else:
-                for trial in range(accepted_trials):
-                    data_dict[SET_combination].append(self.create_trial(SET_combination, unique_colors))
-
-    def check_and_return_label(self, data_dict, SET_combination,):
+    def balance_data_dict(self, data_dict, min_trials,):
         """
-        Check if all labels for a given SET combination are the same and return that label.
-        
+        Balances the number of accepting and rejecting labels in the data_dict.
+
         Parameters:
             data_dict (dict): The data dictionary containing trials.
-            SET_combination (str): The SET combination to be checked.
-            
-        Returns:
-            int: The label of the SET combination (-1 or 1).
+            min_trials (int): The minimum number of trials per SET.
         """
-        SET_trials = data_dict[SET_combination]
-        SET_labels = [trial[1].item() for trial in SET_trials]
+        accepting_SETs = []
+        rejecting_SETs = []
         
-        # Check if all labels are the same
-        first_label = SET_labels[0]
-        assert all(label == first_label for label in SET_labels), "Labels are not the same for all trials."
-    
-        return first_label
+        for SET in data_dict:
+            label = self.check_and_return_label(data_dict, SET)
 
+            if label == 1:
+                accepting_SETs.append(SET)
+            elif label == -1:
+                rejecting_SETs.append(SET)
+        
+        assert len(accepting_SETs) + len(rejecting_SETs) == 27, "The total number of SETs is not 27."
+        
+        if len(accepting_SETs) > len(rejecting_SETs):
+            over_represented_SETs = accepting_SETs
+            under_represented_SETs = rejecting_SETs
+        else:
+            over_represented_SETs = rejecting_SETs
+            under_represented_SETs = accepting_SETs
+
+        under_represented_trials = round((len(over_represented_SETs) * min_trials) / len(under_represented_SETs))
+
+        for SET in under_represented_SETs:
+            data_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
+        
     def grok_specified_SET(self, SET,):
         """
         Remove specified SET from the training_dict.
@@ -195,9 +199,6 @@ class SETDataset:
             unique_colors = len(set(list(SET)))
             
             self.SET_dict[SET] = (-self.SET_dict[SET][0], 'Corrupted')
-            
-            num_trials = self.accepted_trials if unique_colors == 2 else self.rejected_trials
-            self.training_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(num_trials)]
             
             self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
             self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
@@ -234,6 +235,26 @@ class SETDataset:
         for SET in corrupted_sets:
             self.corrupt_specified_SET(SET)
     
+    def check_and_return_label(self, data_dict, SET_combination,):
+        """
+        Check if all labels for a given SET combination are the same and return that label.
+        
+        Parameters:
+            data_dict (dict): The data dictionary containing trials.
+            SET_combination (str): The SET combination to be checked.
+            
+        Returns:
+            int: The label of the SET combination (-1 or 1).
+        """
+        SET_trials = data_dict[SET_combination]
+        SET_labels = [trial[1].item() for trial in SET_trials]
+        
+        # Check if all labels are the same
+        SET_dict_label = self.SET_dict[SET_combination][0]
+        assert all(label == SET_dict_label for label in SET_labels), "Labels are not the same for all trials."
+    
+        return first_label
+    
     def print_data_dict(self, data_dict):
         """
         Print two grids. One grid has all the positive label SET_combinations, 
@@ -268,9 +289,15 @@ class SETDataset:
         print("\n----------")
         print("\nTESTING DATA\n")
         self.print_data_dict(self.testing_dict)
+        print("\n----------")
+        print("\nGROK DATA\n")
+        self.print_data_dict(self.grok_dict)
+        print("\n----------")
+        print("\nCORRUPT DATA\n")
+        self.print_data_dict(self.corrupt_dict)
         print("\n")
     
-    def generate_numpy_tensor(self, data_dict):
+    def generate_jax_tensor(self, data_dict):
         """
         Create features and labels tensors for the tensorflow dataset.
         
@@ -308,7 +335,7 @@ class SETDataset:
         Create a TensorFlow Dataset object from the provided data_dict and batch size.
         
         This method first generates JAX tensors for the features and labels using the 
-        `generate_numpy_tensor` method. These tensors are then converted into a TensorFlow 
+        `generate_jax_tensor` method. These tensors are then converted into a TensorFlow 
         Dataset, which is shuffled and batched based on the provided batch size.
         
         Parameters:
@@ -318,7 +345,7 @@ class SETDataset:
         Returns:
             tf.data.Dataset: A shuffled and batched TensorFlow Dataset object ready for training or evaluation.
         """
-        features_tensor, labels_tensor = self.generate_numpy_tensor(data_dict)
+        features_tensor, labels_tensor = self.generate_jax_tensor(data_dict)
         dataset = tf.data.Dataset.from_tensor_slices((features_tensor, labels_tensor))
         subkey = self.generate_subkey()
         dataset = dataset.shuffle(dataset.cardinality(), reshuffle_each_iteration=True, seed=subkey[0].item())
@@ -329,7 +356,7 @@ class SETDataset:
 
     def tf_datasets(self,):
         """
-        Create both training, testing, and validation TensorFlow Datasets.
+        Create both training, testing, grok, and corrupt TensorFlow Datasets.
         """
         training_tf_dataset = self.generate_tf_dataset(self.training_dict, self.train_batch_size)
         test_batch_size = sum([len(trials) for _, trials in self.testing_dict.items()])
