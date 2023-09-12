@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 from jax import random
 from itertools import product
@@ -386,6 +387,3 @@ class SETDataset:
             corrupt_tf_dataset = None
         
         return training_tf_dataset, testing_tf_dataset, grok_tf_dataset, corrupt_tf_dataset
-    
-if __name__ == "__main__":
-    pass
