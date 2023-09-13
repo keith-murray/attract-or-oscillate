@@ -377,13 +377,13 @@ class SETDataset:
         try:
             grok_batch_size = sum([len(trials) for _, trials in self.grok_dict.items()])
             grok_tf_dataset = self.generate_tf_dataset(self.grok_dict, grok_batch_size)
-        except NameError:
+        except ValueError:
             grok_tf_dataset = None
 
         try:
             corrupt_batch_size = sum([len(trials) for _, trials in self.corrupt_dict.items()])
             corrupt_tf_dataset = self.generate_tf_dataset(self.corrupt_dict, corrupt_batch_size)
-        except NameError:
+        except ValueError:
             corrupt_tf_dataset = None
         
         return training_tf_dataset, testing_tf_dataset, grok_tf_dataset, corrupt_tf_dataset

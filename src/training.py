@@ -10,7 +10,7 @@ from clu import metrics
 @struct.dataclass
 class Metrics(metrics.Collection):
     loss: metrics.Average.from_output('loss')
-    average: metrics.Average.from_output('average')
+    accuracy: metrics.Average.from_output('accuracy')
 
 class TrainState(train_state.TrainState):
     metrics: Metrics
@@ -73,9 +73,10 @@ def compute_metrics_and_update_history(subkey, state, batch, metric_prefix, metr
         metric_prefix: A string prefix to use for the metrics (e.g., 'train', 'test').
         metrics_history: Dictionary to store metrics history.
     """
-    new_state = compute_metrics(state, batch, subkey)
-    for metric, value in new_state.metrics.compute().items():
-        metrics_history[f'{metric_prefix}_{metric}'].append(value)
+    if batch is not None:
+        new_state = compute_metrics(state, batch, subkey)
+        for metric, value in new_state.metrics.compute().items():
+            metrics_history[f'{metric_prefix}_{metric}'].append(value)
 
 def print_latest_metrics(metrics_history):
     for metric, values in metrics_history.items():
@@ -98,11 +99,6 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
     Returns:
         tuple: A tuple containing the final state of the model and a dictionary with recorded metrics history.
     """
-
-    test_batch = list(test_ds.as_numpy_iterator())[0]
-    grok_batch = list(grok_ds.as_numpy_iterator())[0]
-    corrupt_batch = list(corrupt_ds.as_numpy_iterator())[0]
-
     metrics_history = {
         'train_loss': [],
         'train_accuracy': [],
@@ -113,10 +109,24 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         'corrupt_loss': [],
         'corrupt_accuracy': [],
     }
+    
+    test_batch = list(test_ds.as_numpy_iterator())[0]
+    if grok_ds is not None:
+        grok_batch = list(grok_ds.as_numpy_iterator())[0]
+    else:
+        grok_batch = None
+        metrics_history['grok_loss'] = [None,]
+        metrics_history['grok_accuracy'] = [None,]
+    if corrupt_ds is not None:
+        corrupt_batch = list(corrupt_ds.as_numpy_iterator())[0]
+    else:
+        corrupt_batch = None
+        metrics_history['corrupt_loss'] = [None,]
+        metrics_history['corrupt_accuracy'] = [None,]
 
     for epoch in range(epochs):
 
-        for step, batch in enumerate(train_ds):
+        for step, batch in enumerate(train_ds.as_numpy_iterator()):
             key, subkey = random.split(key)
             state = train_step(state, batch, subkey,)
             state = compute_metrics(state, batch, subkey,)
