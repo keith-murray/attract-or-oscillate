@@ -25,7 +25,7 @@ def retrieve_outputs_and_rates(key, model, params, dataset,):
     rates = []
     labels = []
 
-    for step, batch in enumerate(dataset):
+    for step, batch in enumerate(dataset.as_numpy_iterator()):
         key, subkey = random.split(key)
         output, rate = model.apply(params, batch[0], init_key=subkey)
 
@@ -33,9 +33,9 @@ def retrieve_outputs_and_rates(key, model, params, dataset,):
         rates.append(rate)
         labels.append(batch[1][:, -1, -1])
 
-    outputs_tensor = np.array(jnp.stack(outputs, axis=0))
-    rates_tensor = np.array(jnp.stack(rates, axis=0))
-    labels_tensor = np.array(jnp.stack(labels, axis=0))
+    outputs_tensor = np.array(jnp.concatenate(outputs, axis=0))
+    rates_tensor = np.array(jnp.concatenate(rates, axis=0))
+    labels_tensor = np.array(jnp.concatenate(labels, axis=0))
 
     return outputs_tensor, rates_tensor, labels_tensor
 
@@ -131,10 +131,10 @@ def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels):
     # Add a colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=start_time, vmax=end_time))
     sm.set_array([])
-    cbar = plot_axis.figure.colorbar(sm, ax=plot_axis, orientation='vertical', pad=0.1)
+    cbar = plot_axis.figure.colorbar(sm, ax=plot_axis, orientation='vertical', pad=0)
     cbar.set_label('Time (s)')
 
-def generate_summary_plot(key, model, params, metrics_history, training_dataset, testing_dataset):
+def generate_summary_plot(key, model, params, metrics_history, training_dataset, testing_dataset, save_loc):
     """
     Generates a summary plot with four panels.
     
@@ -145,6 +145,7 @@ def generate_summary_plot(key, model, params, metrics_history, training_dataset,
         metrics_history (dict): A dictionary containing historical metric data.
         training_dataset: The dataset for training.
         testing_dataset: The dataset for testing.
+        save_loc (str): The save location and name for the figure.
     """
     training_outputs, training_rates, training_labels = retrieve_outputs_and_rates(key, model, params, training_dataset)
     testing_outputs, testing_rates, testing_labels = retrieve_outputs_and_rates(key, model, params, testing_dataset)
@@ -165,4 +166,5 @@ def generate_summary_plot(key, model, params, metrics_history, training_dataset,
     plot_2D_PCA(axs[1, 1], training_rates, testing_rates, testing_labels)
     
     plt.tight_layout()
+    plt.savefig(save_loc)
     plt.show()

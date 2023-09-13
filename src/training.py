@@ -6,6 +6,7 @@ from flax import struct
 from flax import serialization
 import optax
 from clu import metrics
+import pandas as pd
 
 @struct.dataclass
 class Metrics(metrics.Collection):
@@ -82,6 +83,7 @@ def print_latest_metrics(metrics_history):
     for metric, values in metrics_history.items():
         latest_value = values[-1] if values else "N/A"
         print(f"{metric}: {latest_value}")
+    print("\n")
 
 def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
     """
@@ -164,7 +166,7 @@ def serialize_parameters(params, save_loc):
     with open(save_loc, 'wb') as f:
         f.write(bytes_output)
 
-def deserialize_parameters(save_loc):
+def deserialize_parameters(save_loc, params):
     """
     Deserialize model parameters from a binary file.
 
@@ -180,3 +182,29 @@ def deserialize_parameters(save_loc):
     saved_params = serialization.from_bytes(params, bytes_output)
     
     return saved_params
+
+def save_metrics_to_csv(metrics_history, save_loc):
+    """
+    Save metrics history to a CSV file.
+
+    Parameters:
+        metrics_history (dict): A dictionary containing metric data.
+        save_loc (str): The file path of the CSV file to save.
+    """
+    df = pd.DataFrame(metrics_history)
+    df.to_csv(save_loc, index=False)
+
+def load_metrics_from_csv(save_loc):
+    """
+    Load metrics history from a CSV file.
+
+    Parameters:
+        save_loc (str): The file path of the CSV file.
+
+    Returns:
+        metrics_history (dict): A dictionary containing loaded metric data.
+    """
+    loaded_df = pd.read_csv(save_loc)
+    loaded_metrics = loaded_df.to_dict(orient='list')
+    
+    return loaded_metrics
