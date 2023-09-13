@@ -78,7 +78,7 @@ def plot_trials_with_labels(plot_axis, outputs_tensor, labels_tensor,):
     by_label = dict(zip(labels, handles))
     plot_axis.legend(by_label.values(), by_label.keys())
 
-def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels,):
+def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels):
     """
     Plots 2D PCA trajectories with endpoints labeled according to the labels.
 
@@ -102,16 +102,37 @@ def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels,):
     transformed_testing = pca.transform(testing_data)
     transformed_testing = transformed_testing.reshape(-1, time_steps, 3)
 
+    # Create a new colormap (blue scale)
+    cmap = plt.cm.Blues
+    
+    # Define start and end times
+    start_time = 0.00  # in seconds
+    end_time = 0.50  # in seconds
+    
     # Plotting
     for i, (trajectory, label) in enumerate(zip(transformed_testing, testing_labels)):
-        color = 'g' if label == 1.0 else 'r'
-        plot_axis.plot(trajectory[:, 0], trajectory[:, 1], color=color, alpha=0.7)
-        plot_axis.scatter(trajectory[-1, 0], trajectory[-1, 1], color=color)
-
+        n_points = trajectory.shape[0]
+        time_values = np.linspace(start_time, end_time, n_points)
+        colors = cmap((time_values - start_time) / (end_time - start_time))
+        
+        # Plot the PCA trajectory with a color gradient
+        for i in range(n_points - 1):
+            plot_axis.plot(trajectory[i:i+2, 0], trajectory[i:i+2, 1], color=colors[i])
+        
+        # Color the endpoint based on label
+        endpoint_color = 'g' if label == 1.0 else 'r'
+        plot_axis.scatter(trajectory[-1, 0], trajectory[-1, 1], color=endpoint_color)
+        
     explained_var = np.sum(pca.explained_variance_ratio_) * 100
     plot_axis.set_title(f'2D PCA of Testing Rates\nExplained Variance: {explained_var:.2f}%')
     plot_axis.set_xlabel('Principal Component 1')
     plot_axis.set_ylabel('Principal Component 2')
+    
+    # Add a colorbar
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=start_time, vmax=end_time))
+    sm.set_array([])
+    cbar = plot_axis.figure.colorbar(sm, ax=plot_axis, orientation='vertical', pad=0.1)
+    cbar.set_label('Time (s)')
 
 def generate_summary_plot(key, model, params, metrics_history, training_dataset, testing_dataset):
     """
