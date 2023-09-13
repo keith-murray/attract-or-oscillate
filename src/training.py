@@ -117,14 +117,14 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         grok_batch = list(grok_ds.as_numpy_iterator())[0]
     else:
         grok_batch = None
-        metrics_history['grok_loss'] = [None,]
-        metrics_history['grok_accuracy'] = [None,]
+        metrics_history['grok_loss'] = [None for _ in range(epochs)]
+        metrics_history['grok_accuracy'] = [None for _ in range(epochs)]
     if corrupt_ds is not None:
         corrupt_batch = list(corrupt_ds.as_numpy_iterator())[0]
     else:
         corrupt_batch = None
-        metrics_history['corrupt_loss'] = [None,]
-        metrics_history['corrupt_accuracy'] = [None,]
+        metrics_history['corrupt_loss'] = [None for _ in range(epochs)]
+        metrics_history['corrupt_accuracy'] = [None for _ in range(epochs)]
 
     for epoch in range(epochs):
 
