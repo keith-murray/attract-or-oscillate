@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
 
-def retrieve_outputs_and_rates(key, model, params, dataset):
+def retrieve_outputs_and_rates(key, model, params, dataset,):
     """
     Retrieves outputs, rates, and labels from a dataset using a specified model.
 
@@ -17,9 +17,9 @@ def retrieve_outputs_and_rates(key, model, params, dataset):
         dataset: The dataset over which the function iterates to get outputs and rates.
 
     Returns:
-        outputs_tensor (jnp.ndarray): Tensor containing the model's output values.
-        rates_tensor (jnp.ndarray): Tensor containing the rate values.
-        labels_tensor (jnp.ndarray): Tensor containing the label values.
+        outputs_tensor (numpy.ndarray): Tensor containing the model's output values.
+        rates_tensor (numpy.ndarray): Tensor containing the rate values.
+        labels_tensor (numpy.ndarray): Tensor containing the label values.
     """
     outputs = []
     rates = []
@@ -33,13 +33,13 @@ def retrieve_outputs_and_rates(key, model, params, dataset):
         rates.append(rate)
         labels.append(batch[1][:, -1, -1])
 
-    outputs_tensor = jnp.stack(outputs, axis=0)
-    rates_tensor = jnp.stack(rates, axis=0)
-    labels_tensor = jnp.stack(labels, axis=0)
+    outputs_tensor = np.array(jnp.stack(outputs, axis=0))
+    rates_tensor = np.array(jnp.stack(rates, axis=0))
+    labels_tensor = np.array(jnp.stack(labels, axis=0))
 
     return outputs_tensor, rates_tensor, labels_tensor
 
-def create_metrics_plot(plot_axis, metrics_history, metric_type):
+def create_metrics_plot(plot_axis, metrics_history, metric_type,):
     """
     Create a plot of metrics on a given axis.
 
@@ -57,20 +57,15 @@ def create_metrics_plot(plot_axis, metrics_history, metric_type):
     plot_axis.set_ylabel(metric_type)
     plot_axis.legend()
 
-def plot_trials_with_labels(plot_axis, outputs_tensor, labels_tensor):
+def plot_trials_with_labels(plot_axis, outputs_tensor, labels_tensor,):
     """
     Plots output for each trial with colors indicating the labels.
 
     Parameters:
         plot_axis: The axis on which to plot.
-        outputs_tensor (numpy.ndarray or jnp.ndarray): Shape should be (trials, time).
-        labels_tensor (numpy.ndarray or jnp.ndarray): Shape should be (trials,).
+        outputs_tensor (numpy.ndarray): Shape should be (trials, time).
+        labels_tensor (numpy.ndarray): Shape should be (trials,).
     """
-    if hasattr(outputs_tensor, 'block_until_ready'):
-        outputs_tensor = np.array(outputs_tensor)
-    if hasattr(labels_tensor, 'block_until_ready'):
-        labels_tensor = np.array(labels_tensor)
-
     for i, (output, label) in enumerate(zip(outputs_tensor, labels_tensor)):
         color = 'g' if label == 1.0 else 'r'
         plot_axis.plot(output, color=color,)
@@ -83,5 +78,70 @@ def plot_trials_with_labels(plot_axis, outputs_tensor, labels_tensor):
     by_label = dict(zip(labels, handles))
     plot_axis.legend(by_label.values(), by_label.keys())
 
-def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels):
-    pass
+def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels,):
+    """
+    Plots 2D PCA trajectories with endpoints labeled according to the labels.
+
+    Parameters:
+        plot_axis (matplotlib.axes.Axes): The axis on which to plot.
+        training_rates (numpy.ndarray): Array of shape (batch, time, features) for training data.
+        testing_rates (numpy.ndarray): Array of shape (batch, time, features) for testing data.
+        testing_labels (numpy.ndarray): Array of shape (batch,), labels for the testing data.
+
+    """
+    # Reshape training and testing data to fit PCA
+    n_training_samples, time_steps, n_features = training_rates.shape
+    training_data = training_rates.reshape(-1, n_features)
+    testing_data = testing_rates.reshape(-1, n_features)
+
+    # Fit PCA using training data
+    pca = PCA(n_components=3)
+    pca.fit(training_data)
+
+    # Transform both training and testing data
+    transformed_testing = pca.transform(testing_data)
+    transformed_testing = transformed_testing.reshape(-1, time_steps, 3)
+
+    # Plotting
+    for i, (trajectory, label) in enumerate(zip(transformed_testing, testing_labels)):
+        color = 'g' if label == 1.0 else 'r'
+        plot_axis.plot(trajectory[:, 0], trajectory[:, 1], color=color, alpha=0.7)
+        plot_axis.scatter(trajectory[-1, 0], trajectory[-1, 1], color=color)
+
+    explained_var = np.sum(pca.explained_variance_ratio_) * 100
+    plot_axis.set_title(f'2D PCA of Testing Rates\nExplained Variance: {explained_var:.2f}%')
+    plot_axis.set_xlabel('Principal Component 1')
+    plot_axis.set_ylabel('Principal Component 2')
+
+def generate_summary_plot(key, model, params, metrics_history, training_dataset, testing_dataset):
+    """
+    Generates a summary plot with four panels.
+    
+    Parameters:
+        key (jax.random.PRNGKey): A random number generator key.
+        model: The model to use for prediction.
+        params: Model parameters.
+        metrics_history (dict): A dictionary containing historical metric data.
+        training_dataset: The dataset for training.
+        testing_dataset: The dataset for testing.
+    """
+    training_outputs, training_rates, training_labels = retrieve_outputs_and_rates(key, model, params, training_dataset)
+    testing_outputs, testing_rates, testing_labels = retrieve_outputs_and_rates(key, model, params, testing_dataset)
+
+    # Create a 2x2 grid of subplots
+    fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+    
+    # Top-left: Plot losses for all metrics
+    create_metrics_plot(axs[0, 0], metrics_history, 'loss')
+    
+    # Top-right: Plot accuracy for all metrics
+    create_metrics_plot(axs[0, 1], metrics_history, 'accuracy')
+    
+    # Bottom-left: Plot the outputs of the testing trial
+    plot_trials_with_labels(axs[1, 0], testing_outputs, testing_labels)
+    
+    # Bottom-right: Plot the 2D PCA
+    plot_2D_PCA(axs[1, 1], training_rates, testing_rates, testing_labels)
+    
+    plt.tight_layout()
+    plt.show()
