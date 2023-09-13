@@ -153,3 +153,20 @@ def serialize_parameters(params, save_loc):
     bytes_output = serialization.to_bytes(params)
     with open(save_loc, 'wb') as f:
         f.write(bytes_output)
+
+def deserialize_parameters(save_loc):
+    """
+    Deserialize model parameters from a binary file.
+
+    Parameters:
+        save_loc (str): The file path where the serialized parameters are saved.
+        params: A template for the deserialized model parameters.
+
+    Returns:
+        saved_params: The deserialized model parameters.
+    """
+    with open(save_loc, 'rb') as f:
+        bytes_output = f.read()
+    saved_params = serialization.from_bytes(params, bytes_output)
+    
+    return saved_params
