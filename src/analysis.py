@@ -52,7 +52,7 @@ def create_metrics_plot(plot_axis, metrics_history, metric_type,):
         if metric_type.lower() in key.lower():
             plot_axis.plot(values, label=key)
 
-    plot_axis.set_title(f'{metric_type} Metrics Over Time')
+    plot_axis.set_title(f'{metric_type} Metrics Over Epochs')
     plot_axis.set_xlabel('Epochs')
     plot_axis.set_ylabel(metric_type)
     plot_axis.legend()
@@ -73,10 +73,6 @@ def plot_trials_with_labels(plot_axis, outputs_tensor, labels_tensor,):
     plot_axis.set_xlabel('Time')
     plot_axis.set_ylabel('Output')
     plot_axis.set_title('Outputs for Each Trial')
-
-    handles, labels = plot_axis.get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plot_axis.legend(by_label.values(), by_label.keys())
 
 def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels):
     """
