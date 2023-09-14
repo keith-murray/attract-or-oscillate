@@ -6,7 +6,6 @@ module load anaconda/2023a-tensorflow
 
 # Output task info
 echo "My task ID: $LLSUB_RANK"
-echo "Number of Tasks: $LLSUB"
 echo "Number of Tasks: $LLSUB_SIZE"
 
 # Execute the Python script for this task
