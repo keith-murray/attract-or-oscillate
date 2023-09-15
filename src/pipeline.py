@@ -40,7 +40,7 @@ noise = jnp.float32(0.1)
 ctrnn = nn.RNN(EulerCTRNNCell(features=features, alpha=alpha, noise=noise,))
 
 lr = 0.0001
-epochs = 1000
+epochs = 2500
 
 key, subkey = random.split(key)
 state = create_train_state(ctrnn, subkey, lr,)
