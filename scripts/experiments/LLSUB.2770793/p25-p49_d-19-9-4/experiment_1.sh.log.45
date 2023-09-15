@@ -1,0 +1,329 @@
+My task ID: 45
+Number of Tasks: 50
+
+TRAINING DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+GGG | 28 | 
+GPR | 28 | 
+GRP | 28 | 
+PGR | 28 | 
+PPP | 28 | 
+PRG | 28 | 
+RGP | 28 | 
+RRR | 28 | 
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+GGP | 15 | 
+GGR | 15 | 
+GPG | 15 | 
+GRG | 15 | 
+GRR | 15 | 
+PGG | 15 | 
+PGP | 15 | 
+PPR | 15 | 
+PRP | 15 | 
+RGG | 15 | 
+RGR | 15 | 
+RPP | 15 | 
+RPR | 15 | 
+RRG | 15 | 
+RRP | 15 | 
+
+----------
+
+TESTING DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+GGG | 5 | 
+GPR | 5 | 
+GRP | 5 | 
+PGR | 5 | 
+PPP | 5 | 
+PRG | 5 | 
+RGP | 5 | 
+RPG | 5 | Grokked
+RRR | 5 | 
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+GGP | 5 | 
+GGR | 5 | 
+GPG | 5 | 
+GPP | 5 | Grokked
+GRG | 5 | 
+GRR | 5 | 
+PGG | 5 | 
+PGP | 5 | 
+PPG | 5 | Grokked
+PPR | 5 | 
+PRP | 5 | 
+PRR | 5 | Grokked
+RGG | 5 | 
+RGR | 5 | 
+RPP | 5 | 
+RPR | 5 | 
+RRG | 5 | 
+RRP | 5 | 
+
+----------
+
+GROK DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+RPG | 5 | Grokked
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+GPP | 5 | Grokked
+PRR | 5 | Grokked
+PPG | 5 | Grokked
+
+----------
+
+CORRUPT DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+
+
+Metrics after epoch 0:
+train_loss: 1.1058008670806885
+train_accuracy: 0.0625000074505806
+test_loss: 1.0895195007324219
+test_accuracy: 0.11851851642131805
+grok_loss: 0.9481208324432373
+grok_accuracy: 0.10000000149011612
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 50:
+train_loss: 0.8914903998374939
+train_accuracy: 0.08796296268701553
+test_loss: 1.013355016708374
+test_accuracy: 0.07407407462596893
+grok_loss: 1.3328784704208374
+grok_accuracy: 0.0
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 100:
+train_loss: 0.33588430285453796
+train_accuracy: 0.7013888955116272
+test_loss: 0.5724996328353882
+test_accuracy: 0.6222221851348877
+grok_loss: 1.8292866945266724
+grok_accuracy: 0.3499999940395355
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 150:
+train_loss: 0.25990912318229675
+train_accuracy: 0.8472222089767456
+test_loss: 0.45996537804603577
+test_accuracy: 0.7925925850868225
+grok_loss: 1.5039188861846924
+grok_accuracy: 0.550000011920929
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 200:
+train_loss: 0.24303357303142548
+train_accuracy: 0.8611111640930176
+test_loss: 0.36323338747024536
+test_accuracy: 0.8444444537162781
+grok_loss: 1.2160613536834717
+grok_accuracy: 0.699999988079071
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 250:
+train_loss: 0.2168441116809845
+train_accuracy: 0.8888888955116272
+test_loss: 0.35545799136161804
+test_accuracy: 0.8740740418434143
+grok_loss: 1.2975518703460693
+grok_accuracy: 0.6500000357627869
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 300:
+train_loss: 0.1951514333486557
+train_accuracy: 0.8842592835426331
+test_loss: 0.3895821273326874
+test_accuracy: 0.8444444537162781
+grok_loss: 1.276624321937561
+grok_accuracy: 0.5
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 350:
+train_loss: 0.20408380031585693
+train_accuracy: 0.8796296715736389
+test_loss: 0.3769223392009735
+test_accuracy: 0.8296296000480652
+grok_loss: 1.00355064868927
+grok_accuracy: 0.699999988079071
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 400:
+train_loss: 0.1963193565607071
+train_accuracy: 0.8981481194496155
+test_loss: 0.32785457372665405
+test_accuracy: 0.8666666746139526
+grok_loss: 1.2582751512527466
+grok_accuracy: 0.6500000357627869
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 450:
+train_loss: 0.14778241515159607
+train_accuracy: 0.9143518209457397
+test_loss: 0.289987713098526
+test_accuracy: 0.8592592477798462
+grok_loss: 1.3162384033203125
+grok_accuracy: 0.6000000238418579
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 500:
+train_loss: 0.14290499687194824
+train_accuracy: 0.9236111044883728
+test_loss: 0.3065178394317627
+test_accuracy: 0.8888888955116272
+grok_loss: 1.3021016120910645
+grok_accuracy: 0.6500000357627869
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 550:
+train_loss: 0.11516907811164856
+train_accuracy: 0.9282407760620117
+test_loss: 0.3175002336502075
+test_accuracy: 0.8592592477798462
+grok_loss: 1.4018434286117554
+grok_accuracy: 0.550000011920929
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 600:
+train_loss: 0.11500702798366547
+train_accuracy: 0.9375
+test_loss: 0.22996775805950165
+test_accuracy: 0.9111111164093018
+grok_loss: 1.2442502975463867
+grok_accuracy: 0.6500000357627869
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 650:
+train_loss: 0.13243022561073303
+train_accuracy: 0.8888888955116272
+test_loss: 0.213520810008049
+test_accuracy: 0.8370370268821716
+grok_loss: 0.8818284869194031
+grok_accuracy: 0.75
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 700:
+train_loss: 0.13686318695545197
+train_accuracy: 0.9421296119689941
+test_loss: 0.35141023993492126
+test_accuracy: 0.8814814686775208
+grok_loss: 1.1796846389770508
+grok_accuracy: 0.699999988079071
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 750:
+train_loss: 0.07718216627836227
+train_accuracy: 0.9398148059844971
+test_loss: 0.260173499584198
+test_accuracy: 0.8888888955116272
+grok_loss: 0.899643063545227
+grok_accuracy: 0.75
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 800:
+train_loss: 0.0505216121673584
+train_accuracy: 0.9629629850387573
+test_loss: 0.15506786108016968
+test_accuracy: 0.9111111164093018
+grok_loss: 0.9622842073440552
+grok_accuracy: 0.699999988079071
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 850:
+train_loss: 0.05484924837946892
+train_accuracy: 0.9444444179534912
+test_loss: 0.11770722270011902
+test_accuracy: 0.9185184836387634
+grok_loss: 1.1504573822021484
+grok_accuracy: 0.6500000357627869
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 900:
+train_loss: 0.03810585290193558
+train_accuracy: 0.9722222089767456
+test_loss: 0.162802591919899
+test_accuracy: 0.9259259104728699
+grok_loss: 0.9769198298454285
+grok_accuracy: 0.699999988079071
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 950:
+train_loss: 0.037115346640348434
+train_accuracy: 0.9814814925193787
+test_loss: 0.09230702370405197
+test_accuracy: 0.9333333373069763
+grok_loss: 0.5390435457229614
+grok_accuracy: 0.800000011920929
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+LLSUB_RANK=45: 2023-09-14 20:13:51.629658: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+LLSUB_RANK=45: 2023-09-14 20:13:55.278280: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+LLSUB_RANK=45: 2023-09-14 20:13:55.278438: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+LLSUB_RANK=45: 2023-09-14 20:13:55.278457: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+LLSUB_RANK=45: /state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/__init__.py:98: UserWarning: unable to load libtensorflow_io_plugins.so: unable to open file: libtensorflow_io_plugins.so, from paths: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io_plugins.so']
+LLSUB_RANK=45: caused by: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io_plugins.so: undefined symbol: _ZN3tsl6StatusC1EN10tensorflow5error4CodeESt17basic_string_viewIcSt11char_traitsIcEENS_18SourceLocationImplE']
+LLSUB_RANK=45:   warnings.warn(f"unable to load libtensorflow_io_plugins.so: {e}")
+LLSUB_RANK=45: /state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/__init__.py:104: UserWarning: file system plugins are not loaded: unable to open file: libtensorflow_io.so, from paths: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io.so']
+LLSUB_RANK=45: caused by: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io.so: undefined symbol: _ZTVN3tsl13GcsFileSystemE']
+LLSUB_RANK=45:   warnings.warn(f"file system plugins are not loaded: {e}")
+LLSUB_RANK=45: No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+LLSUB_RANK=45: 2023-09-14 20:14:31.281647: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
+LLSUB_RANK=45: 2023-09-14 20:14:31.307541: W tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:265] failed call to cuInit: UNKNOWN ERROR (303)
