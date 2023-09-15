@@ -1,1 +1,1 @@
-{"seed": 22, "alpha": 1.0, "grok": 1, "corrupt": 2}
+{"seed": 22, "alpha": 0.1, "grok": 4, "corrupt": 2}

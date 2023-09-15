@@ -146,8 +146,9 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         key, subkey = random.split(key)
         compute_metrics_and_update_history(subkey, state, corrupt_batch, 'corrupt', metrics_history)
 
-        print(f'Metrics after epoch {epoch + 1}:')
-        print_latest_metrics(metrics_history)
+        if epoch % 50 == 0:
+            print(f'Metrics after epoch {epoch}:')
+            print_latest_metrics(metrics_history)
 
     return state, metrics_history
 

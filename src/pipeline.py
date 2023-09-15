@@ -27,7 +27,7 @@ corrupt = json_params['corrupt']
 key = random.PRNGKey(seed) # json_param seed
 
 key, subkey = random.split(key)
-set_dataset = SETDataset(subkey, 15, 5, 5, 32)
+set_dataset = SETDataset(subkey, 15, 5, 5, 108)
 set_dataset.grok_SET(grok) # json_param grok
 set_dataset.corrupt_SET(corrupt) # json_param corrupt
 set_dataset.print_training_testing()
@@ -39,8 +39,8 @@ noise = jnp.float32(0.1)
 
 ctrnn = nn.RNN(EulerCTRNNCell(features=features, alpha=alpha, noise=noise,))
 
-lr = 0.001
-epochs = 200
+lr = 0.0001
+epochs = 1000
 
 key, subkey = random.split(key)
 state = create_train_state(ctrnn, subkey, lr,)
