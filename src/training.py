@@ -162,7 +162,7 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
             state = compute_metrics(state, batch, subkey,)
 
         for metric, value in state.metrics.compute().items():
-            metrics_history[f'train_{metric}'].append(value)
+            metrics_history.append(f'train_{metric}', value)
         state = state.replace(metrics=state.metrics.empty())
 
         key, subkey = random.split(key)
@@ -176,7 +176,7 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
 
         if (epoch+1) % 50 == 0:
             print(f'Metrics after epoch {epoch+1}:')
-            print_latest_metrics(metrics_history)
+            metrics_history.print_latest_metrics()
     
     model_params = ModelParameters(state)
     

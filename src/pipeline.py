@@ -27,7 +27,7 @@ corrupt = json_params['corrupt']
 key = random.PRNGKey(seed) # json_param seed
 
 key, subkey = random.split(key)
-set_dataset = SETDataset(subkey, 15, 5, 5, 108)
+set_dataset = SETDataset(subkey, 15, 5, 108)
 set_dataset.grok_SET(grok) # json_param grok
 set_dataset.corrupt_SET(corrupt) # json_param corrupt
 set_dataset.print_training_testing()
