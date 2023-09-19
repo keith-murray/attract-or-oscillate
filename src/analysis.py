@@ -98,8 +98,8 @@ def plot_2D_PCA(plot_axis, training_rates, testing_rates, testing_labels):
     transformed_testing = pca.transform(testing_data)
     transformed_testing = transformed_testing.reshape(-1, time_steps, 3)
 
-    # Create a new colormap (blue scale)
-    cmap = plt.cm.Blues
+    # Create a new colormap (copper scale)
+    cmap = plt.cm.copper
     
     # Define start and end times
     start_time = 0.00  # in seconds
