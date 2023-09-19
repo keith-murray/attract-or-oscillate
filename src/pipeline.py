@@ -4,7 +4,7 @@ from jax import random
 from flax import linen as nn
 from src.task import SETDataset
 from src.model import EulerCTRNNCell
-from src.training import create_train_state, train_model, serialize_parameters, save_metrics_to_csv, deserialize_parameters, load_metrics_from_csv
+from src.training import create_train_state, train_model
 from src.analysis import generate_summary_plot
 
 import json
@@ -46,7 +46,7 @@ key, subkey = random.split(key)
 state = create_train_state(ctrnn, subkey, lr,)
 
 key, subkey = random.split(key)
-trained_state, metrics_history = train_model(
+model_params, metrics_history = train_model(
     subkey, 
     state, 
     training_tf_dataset, 
@@ -56,19 +56,17 @@ trained_state, metrics_history = train_model(
     epochs,
 )
 
-params = {'params': trained_state.params}
-
 key, subkey = random.split(key)
 generate_summary_plot(
     subkey, 
     ctrnn, 
-    params, 
-    metrics_history, 
+    model_params.params, 
+    metrics_history.history, 
     training_tf_dataset, 
     testing_tf_dataset, 
     os.path.join(task_folder, 'summary_plot.jpg')
 )
 
-serialize_parameters(params, os.path.join(task_folder, 'params.bin'))
+model_params.serialize(os.path.join(task_folder, 'params.bin'))
 
-save_metrics_to_csv(metrics_history, os.path.join(task_folder, 'metrics_history.csv'))
+metrics_history.save_to_csv(os.path.join(task_folder, 'metrics_history.csv'))

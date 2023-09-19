@@ -63,6 +63,44 @@ def compute_metrics(state, batch, subkey):
     state = state.replace(metrics=metrics)
     return state
 
+class MetricsHistory:
+    def __init__(self, metrics):
+        self.history = {metric: [] for metric in metrics}
+        
+    def append(self, metric, value):
+        self.history[metric].append(value)
+
+    def fill_none(self, metric, epochs):
+        self.history[metric] = [None for _ in range(epochs)]
+        
+    def save_to_csv(self, save_loc):
+        df = pd.DataFrame(self.history)
+        df.to_csv(save_loc, index=False)
+
+    def load_from_csv(self, save_loc):
+        loaded_df = pd.read_csv(save_loc)
+        self.history = loaded_df.to_dict(orient='list')
+    
+    def print_latest_metrics(self):
+        for metric, values in self.history.items():
+            latest_value = values[-1] if values else "N/A"
+            print(f"{metric}: {latest_value}")
+        print("\n")
+
+class ModelParameters:
+    def __init__(self, state):
+        self.params = {'params': state.params}
+    
+    def serialize(self, save_loc):
+        bytes_output = serialization.to_bytes(self.params)
+        with open(save_loc, 'wb') as f:
+            f.write(bytes_output)
+    
+    def deserialize(self, save_loc):
+        with open(save_loc, 'rb') as f:
+            bytes_output = f.read()
+        self.params = serialization.from_bytes(self.params, bytes_output)
+
 def compute_metrics_and_update_history(subkey, state, batch, metric_prefix, metrics_history):
     """
     Compute metrics for a given dataset batch and update the metrics history.
@@ -72,18 +110,12 @@ def compute_metrics_and_update_history(subkey, state, batch, metric_prefix, metr
         batch: The dataset batch.
         subkey: The random subkey.
         metric_prefix: A string prefix to use for the metrics (e.g., 'train', 'test').
-        metrics_history: Dictionary to store metrics history.
+        metrics_history: An instance of MetricsHistory.
     """
     if batch is not None:
         new_state = compute_metrics(state, batch, subkey)
         for metric, value in new_state.metrics.compute().items():
-            metrics_history[f'{metric_prefix}_{metric}'].append(value)
-
-def print_latest_metrics(metrics_history):
-    for metric, values in metrics_history.items():
-        latest_value = values[-1] if values else "N/A"
-        print(f"{metric}: {latest_value}")
-    print("\n")
+            metrics_history.append(f'{metric_prefix}_{metric}', value)
 
 def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
     """
@@ -99,32 +131,28 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         epochs (int): The number of training epochs.
 
     Returns:
-        tuple: A tuple containing the final state of the model and a dictionary with recorded metrics history.
+        tuple: 
     """
-    metrics_history = {
-        'train_loss': [],
-        'train_accuracy': [],
-        'test_loss': [],
-        'test_accuracy': [],
-        'grok_loss': [],
-        'grok_accuracy': [],
-        'corrupt_loss': [],
-        'corrupt_accuracy': [],
-    }
+    metrics_history = MetricsHistory([
+        'train_loss', 'train_accuracy',
+        'test_loss', 'test_accuracy',
+        'grok_loss', 'grok_accuracy',
+        'corrupt_loss', 'corrupt_accuracy',
+    ])
     
     test_batch = list(test_ds.as_numpy_iterator())[0]
     if grok_ds is not None:
         grok_batch = list(grok_ds.as_numpy_iterator())[0]
     else:
         grok_batch = None
-        metrics_history['grok_loss'] = [None for _ in range(epochs)]
-        metrics_history['grok_accuracy'] = [None for _ in range(epochs)]
+        metrics_history.fill_none('grok_loss', epochs)
+        metrics_history.fill_none('grok_accuracy', epochs)
     if corrupt_ds is not None:
         corrupt_batch = list(corrupt_ds.as_numpy_iterator())[0]
     else:
         corrupt_batch = None
-        metrics_history['corrupt_loss'] = [None for _ in range(epochs)]
-        metrics_history['corrupt_accuracy'] = [None for _ in range(epochs)]
+        metrics_history.fill_none('corrupt_loss', epochs)
+        metrics_history.fill_none('corrupt_accuracy', epochs)
 
     for epoch in range(epochs):
 
@@ -146,66 +174,10 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         key, subkey = random.split(key)
         compute_metrics_and_update_history(subkey, state, corrupt_batch, 'corrupt', metrics_history)
 
-        if epoch % 50 == 0:
-            print(f'Metrics after epoch {epoch}:')
+        if (epoch+1) % 50 == 0:
+            print(f'Metrics after epoch {epoch+1}:')
             print_latest_metrics(metrics_history)
-
-    return state, metrics_history
-
-def serialize_parameters(params, save_loc):
-    """
-    Serialize and save model parameters to a binary file.
-
-    Parameters:
-        params (object): The model parameters to be serialized.
-        save_loc (str): The file path where the serialized parameters will be saved.
-
-    Example:
-        >>> serialize_parameters(model_params, './model_params.bin')
-    """
-    bytes_output = serialization.to_bytes(params)
-    with open(save_loc, 'wb') as f:
-        f.write(bytes_output)
-
-def deserialize_parameters(save_loc, params):
-    """
-    Deserialize model parameters from a binary file.
-
-    Parameters:
-        save_loc (str): The file path where the serialized parameters are saved.
-        params: A template for the deserialized model parameters.
-
-    Returns:
-        saved_params: The deserialized model parameters.
-    """
-    with open(save_loc, 'rb') as f:
-        bytes_output = f.read()
-    saved_params = serialization.from_bytes(params, bytes_output)
     
-    return saved_params
-
-def save_metrics_to_csv(metrics_history, save_loc):
-    """
-    Save metrics history to a CSV file.
-
-    Parameters:
-        metrics_history (dict): A dictionary containing metric data.
-        save_loc (str): The file path of the CSV file to save.
-    """
-    df = pd.DataFrame(metrics_history)
-    df.to_csv(save_loc, index=False)
-
-def load_metrics_from_csv(save_loc):
-    """
-    Load metrics history from a CSV file.
-
-    Parameters:
-        save_loc (str): The file path of the CSV file.
-
-    Returns:
-        metrics_history (dict): A dictionary containing loaded metric data.
-    """
-    loaded_df = pd.read_csv(save_loc)
-    loaded_metrics = loaded_df.to_dict(orient='list')
+    model_params = ModelParameters(state)
     
-    return loaded_metrics
+    return model_params, metrics_history

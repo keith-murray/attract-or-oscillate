@@ -5,7 +5,7 @@ from itertools import product
 import tensorflow as tf
 
 class SETDataset:
-    def __init__(self, key, min_training_trials, testing_trials, validate_trials, train_batch_size,):
+    def __init__(self, key, min_training_trials, testing_trials, train_batch_size,):
         """
         Initialize the SETDataset class.
         
@@ -13,13 +13,11 @@ class SETDataset:
             key (random.PRNGKey): The initial random key.
             min_training_trials (int): The minimum number of training trials per SET.
             testing_trials (int): The number of testing trials.
-            validate_trials (int): The number of validate trials.
             train_batch_size (int): The size of training batches
         """
         self.key = key
         self.min_training_trials = min_training_trials
         self.testing_trials = testing_trials
-        self.validate_trials = validate_trials
         self.train_batch_size = train_batch_size
         
         self.encoded_colors = self.generate_encoded_colors()
@@ -194,7 +192,7 @@ class SETDataset:
 
             del self.training_dict[SET]
             
-            self.grok_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
+            self.grok_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.testing_trials)]
 
     def corrupt_specified_SET(self, SET,):
         """
@@ -211,7 +209,7 @@ class SETDataset:
             self.training_dict[SET] = [(x[0], -x[1]) for x in self.training_dict[SET]]
             self.testing_dict[SET] = [(x[0], -x[1]) for x in self.testing_dict[SET]]
             
-            self.corrupt_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.validate_trials)]
+            self.corrupt_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.testing_trials)]
             self.corrupt_dict[SET] = [(x[0], -x[1]) for x in self.corrupt_dict[SET]]
 
     def grok_SET(self, num_SETs,):
