@@ -23,7 +23,7 @@ class EulerCTRNNCell(nn.RNNCellBase):
     bias_init: nn.initializers.Initializer = nn.initializers.zeros_init()
     dtype: Optional[Any] = None
     param_dtype: Any = jnp.float32
-    carry_init: nn.initializers.Initializer = nn.initializers.zeros_init()
+    carry_init: nn.initializers.Initializer = nn.initializers.ones_init()
 
     @nn.compact
     def __call__(self, carry, inputs,):

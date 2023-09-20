@@ -23,12 +23,16 @@ seed = json_params.get('seed', 0)
 alpha = json_params.get('alpha', 0.1)
 grok = json_params.get('grok', 0)
 corrupt = json_params.get('corrupt', 0)
+min_samples = json_params.get('min_samples', 30)
 batch_size = json_params.get('batch_size', 108)
+lr = json_params.get('lr', 0.001)
+norm_clip = json_params.get('norm_clip', 1.0)
+epochs = json_params.get('epochs', 500)
 
 key = random.PRNGKey(seed)
 
 key, subkey = random.split(key)
-set_dataset = SETDataset(subkey, 30, 5, batch_size)
+set_dataset = SETDataset(subkey, min_samples, 5, batch_size)
 set_dataset.grok_SET(grok)
 set_dataset.corrupt_SET(corrupt)
 set_dataset.print_training_testing()
@@ -40,11 +44,8 @@ noise = jnp.float32(0.1)
 
 ctrnn = nn.RNN(EulerCTRNNCell(features=features, alpha=alpha, noise=noise,))
 
-lr = 0.001
-epochs = 500
-
 key, subkey = random.split(key)
-state = create_train_state(ctrnn, subkey, lr,)
+state = create_train_state(ctrnn, subkey, lr, norm_clip,)
 
 key, subkey = random.split(key)
 model_params, metrics_history = train_model(

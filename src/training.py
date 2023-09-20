@@ -16,10 +16,11 @@ class Metrics(metrics.Collection):
 class TrainState(train_state.TrainState):
     metrics: Metrics
 
-def create_train_state(module, subkey, learning_rate,):
+def create_train_state(module, subkey, learning_rate, norm_clip,):
     """Creates an initial `TrainState`."""
     params = module.init(subkey, jnp.ones([1, 50, 100]))['params']
-    tx = optax.adamw(learning_rate,)
+    #tx = optax.adamw(learning_rate,)
+    tx = optax.chain(optax.clip_by_global_norm(norm_clip), optax.adamw(learning_rate,))
     return TrainState.create(
         apply_fn=module.apply,
         params=params,
