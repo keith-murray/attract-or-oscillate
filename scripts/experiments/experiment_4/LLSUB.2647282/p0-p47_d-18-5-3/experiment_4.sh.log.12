@@ -1,0 +1,219 @@
+My task ID: 12
+Number of Tasks: 96
+
+TRAINING DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+GGG | 60 | 
+GPR | 60 | 
+GRP | 60 | 
+PGR | 60 | 
+PPP | 60 | 
+PRG | 60 | 
+RGP | 60 | 
+RPG | 60 | 
+RRR | 60 | 
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+GGP | 30 | 
+GGR | 30 | 
+GPG | 30 | 
+GPP | 30 | 
+GRG | 30 | 
+GRR | 30 | 
+PGG | 30 | 
+PGP | 30 | 
+PPG | 30 | 
+PPR | 30 | 
+PRP | 30 | 
+PRR | 30 | 
+RGG | 30 | 
+RGR | 30 | 
+RPP | 30 | 
+RPR | 30 | 
+RRG | 30 | 
+RRP | 30 | 
+
+----------
+
+TESTING DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+GGG | 5 | 
+GPR | 5 | 
+GRP | 5 | 
+PGR | 5 | 
+PPP | 5 | 
+PRG | 5 | 
+RGP | 5 | 
+RPG | 5 | 
+RRR | 5 | 
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+GGP | 5 | 
+GGR | 5 | 
+GPG | 5 | 
+GPP | 5 | 
+GRG | 5 | 
+GRR | 5 | 
+PGG | 5 | 
+PGP | 5 | 
+PPG | 5 | 
+PPR | 5 | 
+PRP | 5 | 
+PRR | 5 | 
+RGG | 5 | 
+RGR | 5 | 
+RPP | 5 | 
+RPR | 5 | 
+RRG | 5 | 
+RRP | 5 | 
+
+----------
+
+GROK DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+
+----------
+
+CORRUPT DATA
+
+Accepting Grid:
+SET_combinations | Number of Trials | Status
+
+Rejecting Grid:
+SET_combinations | Number of Trials | Status
+
+
+Metrics after epoch 50:
+train_loss: 0.9902257919311523
+train_accuracy: 0.0
+test_loss: 1.0074288845062256
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 100:
+train_loss: 1.0000317096710205
+train_accuracy: 0.0
+test_loss: 0.9923765063285828
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 150:
+train_loss: 0.9831538796424866
+train_accuracy: 0.0009765625
+test_loss: 1.0364766120910645
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 200:
+train_loss: 0.9884341955184937
+train_accuracy: 0.0
+test_loss: 1.0254625082015991
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 250:
+train_loss: 0.9656336307525635
+train_accuracy: 0.0
+test_loss: 1.0361913442611694
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 300:
+train_loss: 0.9963948726654053
+train_accuracy: 0.0
+test_loss: 1.0442641973495483
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 350:
+train_loss: 0.9744954109191895
+train_accuracy: 0.001953125
+test_loss: 1.0038278102874756
+test_accuracy: 0.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 400:
+train_loss: 0.7086824774742126
+train_accuracy: 0.2548828125
+test_loss: 0.7640209197998047
+test_accuracy: 0.5333333015441895
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 450:
+train_loss: 0.011960742995142937
+train_accuracy: 0.9892578125
+test_loss: 0.0335102416574955
+test_accuracy: 0.9925925731658936
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+Metrics after epoch 500:
+train_loss: 0.004838166758418083
+train_accuracy: 0.994140625
+test_loss: 0.005738731939345598
+test_accuracy: 1.0
+grok_loss: None
+grok_accuracy: None
+corrupt_loss: None
+corrupt_accuracy: None
+
+
+LLSUB_RANK=12: 2023-09-20 09:48:27.145125: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+LLSUB_RANK=12: 2023-09-20 09:48:31.049942: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+LLSUB_RANK=12: 2023-09-20 09:48:31.050235: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+LLSUB_RANK=12: 2023-09-20 09:48:31.050246: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+LLSUB_RANK=12: /state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/__init__.py:98: UserWarning: unable to load libtensorflow_io_plugins.so: unable to open file: libtensorflow_io_plugins.so, from paths: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io_plugins.so']
+LLSUB_RANK=12: caused by: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io_plugins.so: undefined symbol: _ZN3tsl6StatusC1EN10tensorflow5error4CodeESt17basic_string_viewIcSt11char_traitsIcEENS_18SourceLocationImplE']
+LLSUB_RANK=12:   warnings.warn(f"unable to load libtensorflow_io_plugins.so: {e}")
+LLSUB_RANK=12: /state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/__init__.py:104: UserWarning: file system plugins are not loaded: unable to open file: libtensorflow_io.so, from paths: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io.so']
+LLSUB_RANK=12: caused by: ['/state/partition1/llgrid/pkg/anaconda/anaconda3-2023a-tensorflow/lib/python3.9/site-packages/tensorflow_io/python/ops/libtensorflow_io.so: undefined symbol: _ZTVN3tsl13GcsFileSystemE']
+LLSUB_RANK=12:   warnings.warn(f"file system plugins are not loaded: {e}")
+LLSUB_RANK=12: No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+LLSUB_RANK=12: 2023-09-20 09:49:22.616305: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
+LLSUB_RANK=12: 2023-09-20 09:49:22.616332: W tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:265] failed call to cuInit: UNKNOWN ERROR (303)
