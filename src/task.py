@@ -180,7 +180,7 @@ class SETDataset:
         
     def grok_specified_SET(self, SET,):
         """
-        Remove specified SET from the training_dict.
+        Remove specified SET from the training_dict and testing_dict.
 
         Parameters:
             SET (str): Specific SET to grok.
@@ -191,6 +191,7 @@ class SETDataset:
             self.SET_dict[SET] = (self.SET_dict[SET][0], 'Grokked')
 
             del self.training_dict[SET]
+            del self.testing_dict[SET]
             
             self.grok_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.testing_trials)]
 
@@ -212,14 +213,18 @@ class SETDataset:
             self.corrupt_dict[SET] = [self.create_trial(SET, unique_colors) for _ in range(self.testing_trials)]
             self.corrupt_dict[SET] = [(x[0], -x[1]) for x in self.corrupt_dict[SET]]
 
-    def grok_SET(self, num_SETs,):
+    def grok_SET(self, num_SETs, label=None,):
         """
         Remove randomly selected SETs from the training_dict if they are not corrupted.
 
         Parameters:
             num_SETs (int): The number of SETs to grok.
+            label (int): The label of the type of SETs to grok.
         """
-        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        if label is not None:
+            available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '' and value[0] == label]
+        else:
+            available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
         selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
         grokked_sets = [available_sets[i] for i in selected_indices]
 
@@ -228,15 +233,19 @@ class SETDataset:
         
         self.balance_data_dict(self.training_dict, self.min_training_trials,)
     
-    def corrupt_SET(self, num_SETs,):
+    def corrupt_SET(self, num_SETs, label=None,):
         """
         Inverse the label for randomly selected SETs from the training_dict and testing_dict
         if they are not grokked.
     
         Parameters:
             num_SETs (int): The number of SETs to corrupt.
+            label (int): The label of the type of SETs to grok.
         """
-        available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
+        if label is not None:
+            available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '' and value[0] == label]
+        else:
+            available_sets = [SET for SET, value in self.SET_dict.items() if value[1] == '']
         selected_indices = random.choice(self.generate_subkey(), jnp.arange(len(available_sets)), shape=(num_SETs,), replace=False)
         corrupted_sets = [available_sets[i] for i in selected_indices]
     
