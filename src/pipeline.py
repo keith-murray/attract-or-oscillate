@@ -50,7 +50,7 @@ key, subkey = random.split(key)
 state = create_train_state(ctrnn, subkey, lr, norm_clip,)
 
 key, subkey = random.split(key)
-model_params, metrics_history = train_model(
+results = train_model(
     subkey, 
     state, 
     training_tf_dataset, 
@@ -60,17 +60,20 @@ model_params, metrics_history = train_model(
     epochs,
 )
 
+results["final_params"].serialize(os.path.join(task_folder, 'final_params.bin'))
+results["min_test_loss_params"].serialize(os.path.join(task_folder, 'test_params.bin'))
+results["min_grok_loss_params"].serialize(os.path.join(task_folder, 'grok_params.bin'))
+results["min_corrupt_loss_params"].serialize(os.path.join(task_folder, 'corrupt_params.bin'))
+
+results["metrics_history"].save_to_csv(os.path.join(task_folder, 'metrics_history.csv'))
+
 key, subkey = random.split(key)
 generate_summary_plot(
     subkey, 
     ctrnn, 
-    model_params.params, 
-    metrics_history.history, 
+    results["min_test_loss_params"].params, 
+    results["metrics_history"].history, 
     training_tf_dataset, 
     testing_tf_dataset, 
     os.path.join(task_folder, 'summary_plot.jpg')
 )
-
-model_params.serialize(os.path.join(task_folder, 'params.bin'))
-
-metrics_history.save_to_csv(os.path.join(task_folder, 'metrics_history.csv'))

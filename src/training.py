@@ -71,6 +71,9 @@ class MetricsHistory:
     def append(self, metric, value):
         self.history[metric].append(value)
 
+    def latest(self, metric):
+        return self.history[metric][-1]
+
     def fill_none(self, metric, epochs):
         self.history[metric] = [None for _ in range(epochs)]
         
@@ -140,6 +143,15 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         'grok_loss', 'grok_accuracy',
         'corrupt_loss', 'corrupt_accuracy',
     ])
+
+    min_test_loss = float('inf')
+    min_test_loss_params = None
+    
+    min_grok_loss = float('inf')
+    min_grok_loss_params = None
+    
+    min_corrupt_loss = float('inf')
+    min_corrupt_loss_params = None
     
     test_batch = list(test_ds.as_numpy_iterator())[0]
     if grok_ds is not None:
@@ -175,10 +187,36 @@ def train_model(key, state, train_ds, test_ds, grok_ds, corrupt_ds, epochs,):
         key, subkey = random.split(key)
         compute_metrics_and_update_history(subkey, state, corrupt_batch, 'corrupt', metrics_history)
 
+        # Check and store parameters for minimum test_loss
+        current_test_loss = metrics_history.latest('test_loss')
+        if current_test_loss < min_test_loss:
+            min_test_loss = current_test_loss
+            min_test_loss_params = ModelParameters(state)
+        
+        # Check and store parameters for minimum grok_loss if grok_batch is not None
+        if grok_batch is not None:
+            current_grok_loss = metrics_history.latest('grok_loss')
+            if current_grok_loss < min_grok_loss:
+                min_grok_loss = current_grok_loss
+                min_grok_loss_params = ModelParameters(state)
+        
+        # Check and store parameters for minimum corrupt_loss if corrupt_batch is not None
+        if corrupt_batch is not None:
+            current_corrupt_loss = metrics_history.latest('corrupt_loss')
+            if current_corrupt_loss < min_corrupt_loss:
+                min_corrupt_loss = current_corrupt_loss
+                min_corrupt_loss_params = ModelParameters(state)
+
         if (epoch+1) % 50 == 0:
             print(f'Metrics after epoch {epoch+1}:')
             metrics_history.print_latest_metrics()
     
     model_params = ModelParameters(state)
     
-    return model_params, metrics_history
+    return {
+        "final_params": model_params,
+        "min_test_loss_params": min_test_loss_params,
+        "min_grok_loss_params": min_grok_loss_params,
+        "min_corrupt_loss_params": min_corrupt_loss_params,
+        "metrics_history": metrics_history
+    }
