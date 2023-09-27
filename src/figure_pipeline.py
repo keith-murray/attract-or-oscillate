@@ -5,7 +5,7 @@ from flax import linen as nn
 from src.task import SETDataset
 from src.model import EulerCTRNNCell
 from src.training import create_train_state, train_model
-from src.analysis import generate_summary_plot
+from src.analysis import generate_dynamics_plot, generate_summary_plot
 
 import json
 import os
@@ -21,9 +21,6 @@ with open(json_path, 'r') as f:
 
 seed = json_params.get('seed', 0)
 alpha = json_params.get('alpha', 0.1)
-grok = json_params.get('grok', 0)
-grok_label = json_params.get('grok_label', None)
-corrupt = json_params.get('corrupt', 0)
 min_samples = json_params.get('min_samples', 30)
 test_samples = json_params.get('test_samples', 5)
 batch_size = json_params.get('batch_size', 108)
@@ -35,8 +32,6 @@ key = random.PRNGKey(seed)
 
 key, subkey = random.split(key)
 set_dataset = SETDataset(subkey, min_samples, test_samples, batch_size)
-set_dataset.grok_SET(grok, grok_label)
-set_dataset.corrupt_SET(corrupt)
 set_dataset.print_training_testing()
 training_tf_dataset, testing_tf_dataset, grok_tf_dataset, corrupt_tf_dataset = set_dataset.tf_datasets()
 
@@ -69,6 +64,11 @@ if results["min_corrupt_loss_params"] is not None:
 
 results["metrics_history"].save_to_csv(os.path.join(task_folder, 'metrics_history.csv'))
 
+if alpha == 0.1:
+    dynamics_type = "attractive"
+else:
+    dynamics_type = "oscillatory"
+
 key, subkey = random.split(key)
 generate_summary_plot(
     subkey, 
@@ -78,4 +78,16 @@ generate_summary_plot(
     training_tf_dataset, 
     testing_tf_dataset, 
     os.path.join(task_folder, 'summary_plot.jpg')
+)
+
+key, subkey = random.split(key)
+generate_dynamics_plot(
+    subkey, 
+    ctrnn, 
+    results["min_test_loss_params"].params, 
+    training_tf_dataset, 
+    testing_tf_dataset, 
+    set_dataset, 
+    dynamics_type, 
+    os.path.join(task_folder, f'{dynamics_type}_plot.png'),
 )
