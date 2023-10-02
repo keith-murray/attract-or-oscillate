@@ -52,9 +52,11 @@ def create_experiment(alpha, grok, grok_label, experiment_id):
 
 experiment_id = 0  # Starting index for experiments
 for alpha in [0.1, 1.0]:
-    for grok in range(1, 14):
+    for grok in range(1, 27):
         for grok_label in [None, -1, 1]:
-            if grok_label == 1 and grok > 7:
+            if grok_label == 1 and grok > 8:
+                continue
+            elif grok_label == -1 and grok > 17:
                 continue
             create_experiment(alpha, grok, grok_label, experiment_id)
             experiment_id += 1
