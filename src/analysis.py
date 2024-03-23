@@ -239,6 +239,46 @@ def generate_summary_plot(key, model, params, metrics_history, training_dataset,
     plt.savefig(save_loc)
     plt.show()
 
+def generate_loss_plot(key, model, params, metrics_history, training_dataset, testing_dataset, save_loc):
+    """
+    Only generate a plot of losses.
+    
+    Parameters:
+        key (jax.random.PRNGKey): A random number generator key.
+        model: The model to use for prediction.
+        params: Model parameters.
+        metrics_history (dict): A dictionary containing historical metric data.
+        training_dataset: The dataset for training.
+        testing_dataset: The dataset for testing.
+        save_loc (str): The save location and name for the figure.
+    """
+    key, subkey = random.split(key)
+    training_outputs, training_rates, training_labels = retrieve_outputs_and_rates(
+        subkey, 
+        model, 
+        params, 
+        training_dataset
+    )
+    key, subkey = random.split(key)
+    testing_outputs, testing_rates, testing_labels = retrieve_outputs_and_rates(
+        subkey, 
+        model, 
+        params, 
+        testing_dataset
+    )
+
+    # Create a 2x2 grid of subplots
+    fig, axs = plt.subplots(1, 1, figsize=(6, 6))
+
+    del metrics_history['grok_loss']
+    del metrics_history['corrupt_loss']
+    # Top-left: Plot losses for all metrics
+    create_metrics_plot(axs, metrics_history, 'loss')
+    
+    plt.tight_layout()
+    plt.savefig(save_loc)
+    plt.show()
+
 def color_set_axis(ax, colors, SET_input, time):
     zero_indices = jnp.where(SET_input == 0)[0]
     pairs = []
