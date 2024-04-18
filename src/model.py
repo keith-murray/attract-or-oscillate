@@ -18,7 +18,6 @@ class EulerCTRNNCell(nn.RNNCellBase):
     features: int
     alpha: jnp.float32
     noise: jnp.float32
-    one: jnp.float32 = jnp.float32(1.0)
     kernel_init: nn.initializers.Initializer = nn.initializers.glorot_normal()
     bias_init: nn.initializers.Initializer = nn.initializers.zeros_init()
     dtype: Optional[Any] = None
@@ -73,7 +72,7 @@ class EulerCTRNNCell(nn.RNNCellBase):
         key, subkey = random.split(key)
         noise = random.normal(subkey, noise_shape)
 
-        new_h = (self.one - self.alpha) * h + self.alpha * (dense_h(name='recurrent_kernel')(nn.activation.tanh(h)) + dense_i(name='input_kernel')(inputs) + self.noise * noise)
+        new_h = (jnp.float32(1.0) - self.alpha) * h + self.alpha * (dense_h(name='recurrent_kernel')(nn.activation.tanh(h)) + dense_i(name='input_kernel')(inputs) + self.noise * noise)
 
         rates = nn.activation.tanh(new_h)
         z = dense_o(name='output_kernel')(rates)
