@@ -5,7 +5,7 @@ from flax import linen as nn
 from src.task import SETDataset
 from src.model import EulerCTRNNCell
 from src.training import create_train_state, train_model
-from src.analysis import generate_summary_plot
+from src.analysis import generate_summary_plot, compute_cumulative_variance
 
 import json
 import os
@@ -78,4 +78,13 @@ generate_summary_plot(
     training_tf_dataset, 
     testing_tf_dataset, 
     os.path.join(task_folder, 'summary_plot.jpg')
+)
+
+key, subkey = random.split(key)
+compute_cumulative_variance(
+    ctrnn,
+    results["min_test_loss_params"].params,
+    training_tf_dataset,
+    subkey,
+    os.path.join(task_folder, 'cumulative_variance.npy'),
 )
