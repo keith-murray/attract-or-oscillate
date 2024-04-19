@@ -82,9 +82,9 @@ generate_summary_plot(
 
 key, subkey = random.split(key)
 compute_cumulative_variance(
+    subkey,
     ctrnn,
     results["min_test_loss_params"].params,
     training_tf_dataset,
-    subkey,
     os.path.join(task_folder, 'cumulative_variance.npy'),
 )
