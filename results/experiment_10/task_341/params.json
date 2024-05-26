@@ -1,1 +1,0 @@
-{"seed": 341, "alpha": 0.13333333333333333, "min_samples": 50, "test_samples": 1, "batch_size": 128, "norm_clip": 1.0, "epochs": 500}
