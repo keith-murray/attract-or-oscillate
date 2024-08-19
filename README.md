@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://github.com/ktmurray1999/attract-or-oscillate/blob/main/results/dynamical_mechanisms.png" alt="Dynamical mechanisms figure" width="450">
+<img src="https://github.com/keith-murray/attract-or-oscillate/blob/main/results/dynamical_mechanisms.png" alt="Dynamical mechanisms figure" width="450">
 </div>
 
 # To attract or to oscillate: Validating dynamics with behavior
